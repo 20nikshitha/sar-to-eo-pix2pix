@@ -1,0 +1,13 @@
+# Pinned for reproducibility. Tested on Python 3.10.
+# Install torch matching your CUDA from https://pytorch.org if the default wheel
+# does not fit your environment (e.g. Colab/Kaggle already ship a torch build).
+torch==2.2.2
+torchvision==0.17.2
+numpy==1.26.4
+Pillow==10.3.0
+PyYAML==6.0.1
+scikit-image==0.22.0
+matplotlib==3.8.4
+tqdm==4.66.4
+lpips==0.1.4
+pytorch-fid==0.3.0

@@ -1,0 +1,78 @@
+"""
+Tiny smoke test. Verifies the model and the infer pipeline actually run, with no
+dataset needed. Run this FIRST after setting up the environment:
+
+    python tests/smoke_test.py
+
+It builds the generator + discriminator, runs one forward/backward pass on random
+data, checks output shapes, and exercises infer.py's pre/post-processing on a
+synthetic SAR tile. If this passes, the plumbing is correct.
+"""
+
+import os
+import sys
+import tempfile
+
+# allow running as `python tests/smoke_test.py` from the repo root
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+import numpy as np
+import torch
+from PIL import Image
+
+from src.models import build_generator, build_discriminator
+from src.losses import GANLoss
+from infer import preprocess, postprocess, load_generator
+from src.utils import save_checkpoint
+
+
+def main():
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    print(f"[smoke] device = {device}")
+
+    model_cfg = {"input_nc": 1, "output_nc": 3, "ngf": 16, "ndf": 16,
+                 "num_downs": 8, "n_layers_d": 3, "norm": "batch",
+                 "use_dropout": True}
+    G = build_generator(model_cfg).to(device)
+    D = build_discriminator(model_cfg).to(device)
+
+    sar = torch.randn(2, 1, 256, 256, device=device)
+    eo = torch.randn(2, 3, 256, 256, device=device)
+
+    # forward
+    fake = G(sar)
+    assert fake.shape == (2, 3, 256, 256), fake.shape
+    assert fake.min() >= -1.0001 and fake.max() <= 1.0001, "Tanh range broken"
+    print(f"[smoke] generator OK, output {tuple(fake.shape)}")
+
+    d_out = D(torch.cat([sar, fake], dim=1))
+    print(f"[smoke] discriminator OK, patch map {tuple(d_out.shape)}")
+
+    # one backward step
+    gan = GANLoss("lsgan").to(device)
+    l1 = torch.nn.L1Loss()
+    loss = gan(D(torch.cat([sar, fake], dim=1)), True) + 100 * l1(fake, eo)
+    loss.backward()
+    print(f"[smoke] backward OK, loss = {loss.item():.3f}")
+
+    # checkpoint round-trip + infer pre/post-processing
+    with tempfile.TemporaryDirectory() as tmp:
+        ckpt = os.path.join(tmp, "ck.pth")
+        save_checkpoint(ckpt, G, D, None, None, 1, model_cfg)
+        G2, cfg2 = load_generator(ckpt, device)
+        assert cfg2["input_nc"] == 1
+
+        # fake an 8-bit SAR png and run it through infer's path
+        png = os.path.join(tmp, "tile.png")
+        Image.fromarray((np.random.rand(256, 256) * 255).astype(np.uint8), "L").save(png)
+        x = preprocess(png, cfg2["input_nc"]).to(device)
+        y = G2(x)
+        rgb = postprocess(y)
+        assert rgb.shape == (256, 256, 3) and rgb.dtype == np.uint8
+        print(f"[smoke] infer pipeline OK, RGB out {rgb.shape} {rgb.dtype}")
+
+    print("\n[smoke] ALL CHECKS PASSED")
+
+
+if __name__ == "__main__":
+    main()

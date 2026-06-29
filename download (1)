@@ -1,0 +1,51 @@
+================================================================================
+TIME AND RESOURCE LOG
+SAR-to-EO Image Translation — GalaxEye AI Research Intern Assignment
+Candidate: FirstName LastName
+================================================================================
+
+NOTE: This log is for context only and is not used to judge the quality of the
+work. Fill every [TODO] with your real values from your own run. The same content
+also appears as Section 7 of the technical report.
+
+--------------------------------------------------------------------------------
+1. TIME SPENT, BY ACTIVITY
+--------------------------------------------------------------------------------
+  Data exploration .................... [TODO] hours
+  Literature reading .................. [TODO] hours
+  Implementation ...................... [TODO] hours
+  Training (wall-clock) ............... [TODO] hours
+  Evaluation .......................... [TODO] hours
+  Report writing ...................... [TODO] hours
+  --------------------------------------------------
+  TOTAL ............................... [TODO] hours
+
+--------------------------------------------------------------------------------
+2. MACHINE USED FOR TRAINING
+--------------------------------------------------------------------------------
+  Local or cloud ...................... [TODO, e.g. Google Colab / Kaggle / local]
+  Tier / instance ..................... [TODO, e.g. Colab free tier]
+  GPU model ........................... [TODO, e.g. NVIDIA T4]
+  GPU VRAM ............................ [TODO, e.g. 16 GB]
+  Number of GPUs ...................... [TODO, e.g. 1]
+  CPU / RAM (optional) ................ [TODO]
+
+--------------------------------------------------------------------------------
+3. TRAINING TIME
+--------------------------------------------------------------------------------
+  Approx. time per epoch .............. [TODO]
+  Number of epochs trained ............ [TODO]
+  Total wall-clock training time ...... [TODO]
+  (Ablation run, if separate) ......... [TODO per epoch / total]
+
+--------------------------------------------------------------------------------
+4. RESOURCE / TIME CONSTRAINTS AND THEIR EFFECT ON DECISIONS
+--------------------------------------------------------------------------------
+  [TODO — a few sentences. Example:]
+  Working on a single 16 GB GPU under free-tier session limits drove several
+  deliberate choices: a Pix2Pix-class model rather than conditional diffusion,
+  256x256 resolution, batch size 8, and a capped per-terrain subset of the data.
+  These were trade-offs made to keep the entire pipeline (data prep, training,
+  the controlled ablation, and evaluation) runnable end-to-end within the
+  available compute, rather than maximising a single metric on a larger run.
+================================================================================
